@@ -582,6 +582,105 @@ var _ = (function brockEvents () {
       });
     },
 
+    finance : {
+      assetReturn: function (iv, pv, t) {
+        return Math.pow(pv / iv, 1 / t) - 1;
+
+        /** -----
+        @param  : iv - the initial value of the asset.
+                  pv - the present value of the asset.
+                  t - the time in years held.
+        @desc   : Get the annualized return of an asset.
+        @return : returns a number.
+        ----- **/
+      },
+
+      futureValue: function (pv, ir, t) {
+        var total_interest = Math.pow(ir + 1, t);
+        /* calculate compounded interest over t(years). */
+
+        return pv * total_interest;
+
+        /** -----
+        @param  : pv - the present value of the asset.
+                  ir - the interest rate expected (in decimal).
+                  t - the time in years held.
+        @desc   : Get the future value of an asset with a given interest rate.
+        @return : returns a number.
+        ----- **/
+      },
+
+      mortgagePayment: function (p, ir, t) {
+        ir /= 12;
+        /* reduce the interest rate to monthly terms. */
+
+        t *= 12;
+        /* increase time to monthly terms from yearly. */
+
+        return p * ir / (1 - Math.pow(1 + ir, -t));
+        /* mortgage formula. */
+
+        /** -----
+        @param  : p - the principle owed.
+                  ir - the interest rate expected (in decimal).
+                  t - the time in years held.
+        @desc   : Get the payment on a principle owed.
+        @return : returns a number.
+        ----- **/
+      },
+
+      sharpeRatio: function (ar, rfr, av) {
+        return (ar - rfr) / av;
+        /* sharpe ratio formula. */
+
+        /** -----
+        @param  : ar - the asset volatility.
+                  rfr - the risk free rate.
+                  av - the asset volatility.
+        @desc   : Return the Sharpe Ratio of an asset.
+        @return : returns a number.
+        ----- **/
+      },
+
+      capm: function (rfr, ab, mr) {
+        return rfr + ab * (mr - rfr);
+        /* capm formula. */
+
+        /** -----
+        @param  : rfr - the risk free rate.
+                  ab - the asset beta.
+                  mr - the market return.
+        @desc   : Return the CAPM of an asset.
+        @return : returns a number.
+        ----- **/
+      },
+
+      expectedValue: function (events, probabilities) {
+        var expectedValue = 0;
+        /* initialize expectedValue variable. */
+
+        if (events.length === probabilities.length) {
+          /* check that events and probabilities arrays are the same length. */
+          events.forEach(function (i, o) {
+            /* for each event. */
+            expectedValue += (i * probabilities[o]);
+            /* multiply event by p(event). */
+          });
+        } else throw "Error. Arrays should be the same length.";
+
+        return expectedValue;
+        /* return the expected value. */
+
+        /** -----
+        @param  : events - an array of numbers (events).
+                  probabilities - an array of probabilities of each event.
+        @desc   : Return the expected value.
+        @return : returns a number.
+        ----- **/
+      }
+
+    },
+
     quant : {
       sum: function (arr) {
         return arr.reduce(function (a, b) {

@@ -28,7 +28,16 @@ A list of core functions available are:
 6. **quant (object):** library of quantitative financial functions
 6. **finance (object):** library of financial functions
 
-A list of quant function available are:
+A list of financial functions available are:
+
+1. **assetReturn:** get asset return given present and past value.
+2. **futureValue:** get future value of an asset at interest rate.
+3. **mortgagePayment:** calculate expected mortgage/loan payment.
+3. **sharpeRatio:** return comparable risk ratio of an asset.
+3. **capm:** return Capital Asset Pricing Model (CAPM) of an asset.
+3. **expectedValue:** return the expected value of events.
+
+A list of quant functions available are:
 
 1. **sum:** sum of array
 2. **mean:** mean of array
@@ -71,7 +80,7 @@ _.ajax({
   data : null,
   callback : function (response, error) {
     console.log(response, error);
-  }
+  },
   dataType : "text"
 });
 ```
