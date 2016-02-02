@@ -5,48 +5,48 @@ This is my personal set of tools to cover all my jQuery needs without the jQuery
 
 A list of methods accessible to selections are:
 
-1. addClass: add class to one element
-2. append: append a HTML Element to parent
-3. attr: get/set attribute
-4. children: get children with attribute
-5. css: get/set CSS properties
-6. each: iterate through element selection
-7. el: filter selected elements by index or with callback
-8. html: get/set innerHTML
-9. on: add event listeners
-10. parent: get parent of one element
-11. remove: remove one element
-12. removeClass: remove class from one element
-13. text: get/set innerText
-14. val: get/set value of one element
+1. **addClass:** add class to one element
+2. **append:** append a HTML Element to parent
+3. **attr:** get/set attribute
+4. **children:** get children with attribute
+5. **css:** get/set CSS properties
+6. **each:** iterate through element selection
+7. **el:** filter selected elements by index or with callback
+8. **html:** get/set innerHTML
+9. **on:** add event listeners
+10. **parent:** get parent of one element
+11. **remove:** remove one element
+12. **removeClass:** remove class from one element
+13. **text:** get/set innerText
+14. **val:** get/set value of one element
 
 A list of core functions available are:
 
-1. ajax: send an ajax request
-2. create: create an HTML element with JSON
-3. get: specific GET request using internal ajax function
-6. quant (object): library of quantitative financial functions
-6. finance (object): library of financial functions
+1. **ajax:** send an ajax request
+2. **create:** create an HTML element with JSON
+3. **get:** specific GET request using internal ajax function
+6. **quant (object):** library of quantitative financial functions
+6. **finance (object):** library of financial functions
 
 A list of quant function available are:
 
-1. sum: sum of array
-2. mean: mean of array
-3. variance: variance of array
-4. last: last index of array
-5. standardDeviation: standard deviation of array
-6. kurtosis: kurtosis of array
-7. skewness: skewness of array
-8. movingSample: generic callback for array slicing and continuous functions
-9. productSample: generic callback for continuous product functions
-10. bollingerBands: bollinger bands over time in array
-11. simpleMovingAverage: simple moving average over time in array
-12. rollingVolatility: volatility over time in array
-13. rollingSkewness: skewness over time in array
-14. rollingKurtosis: kurtosis over time in array
-15. residuals: array to residuals
-16. gaussian: returns a random number in distribution N(0, 1)
-17. normalDist: returns a random number in distribution N(mean, standardDeviation)
+1. **sum:** sum of array
+2. **mean:** mean of array
+3. **variance:** variance of array
+4. **last:** last index of array
+5. **standardDeviation:** standard deviation of array
+6. **kurtosis:** kurtosis of array
+7. **skewness:** skewness of array
+8. **movingSample:** generic callback for array slicing and continuous functions
+9. **productSample:** generic callback for continuous product functions
+10. **bollingerBands:** bollinger bands over time in array
+11. **simpleMovingAverage:** simple moving average over time in array
+12. **rollingVolatility:** volatility over time in array
+13. **rollingSkewness:** skewness over time in array
+14. **rollingKurtosis:** kurtosis over time in array
+15. **residuals:** array to residuals
+16. **gaussian:** returns a random number in distribution N(0, 1)
+17. **normalDist:** returns a random number in distribution N(mean, standardDeviation)
 
 
 ##Use
