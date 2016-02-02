@@ -582,63 +582,98 @@ var _ = (function brockEvents () {
       });
     },
 
-    product : function (arr) {
-      return arr.reduce(function (a, b) {
-        return a * b;
-      });
-    },
-
-    sum : function (arr) {
-      return arr.reduce(function (a, b) {
-        return a + b;
-      });
-    },
-
     quant : {
       sum: function (arr) {
         return arr.reduce(function (a, b) {
           return a + b;
         });
+
+        /** -----
+        @param  : arr - an array of numbers.
+        @desc   : Get the sum of an array.
+        @return : returns a number.
+        ----- **/
       },
 
       mean: function (arr) {
         return this.sum(arr) / arr.length;
+
+        /** -----
+        @param  : arr - an array of numbers.
+        @desc   : Get the mean of an array. Requires internal sum function.
+        @return : returns a number.
+        ----- **/
       },
 
       variance: function (arr, sample) {
         var mean = this.mean(arr);
+        /* get the mean of the data set. */
         var resids = arr.map(function (i) {
           return Math.pow(i - mean, 2);
+          /* for each, get the residual and square it. */
         });
 
         return this.sum(resids) / (arr.length - !!sample);
+        /* return the sum of the residuals over the array length -- minus on
+           if it is a sample. */
+
+        /** -----
+        @param  : arr - an array of numbers.
+                 sample - bool for whether it is sample or not (population).
+        @desc   : Get the variance of an array.
+        @return : returns a number.
+        ----- **/
       },
 
       last: function (arr) {
         return arr[arr.length - 1];
+
+        /** -----
+        @param  : arr - an array of numbers.
+        @desc   : Get the last index of an array.
+        @return : returns a single index.
+        ----- **/
       },
 
       standardDeviation: function (arr, sample) {
         var variance = this.variance(arr, sample);
 
         return Math.sqrt(variance);
+        /* standard deviation is the square root of the variance. */
+
+        /** -----
+        @param  : arr - an array of numbers.
+                 sample - bool for whether it is sample or not (population).
+        @desc   : Get the standard deviation of an array.
+        @return : returns a number.
+        ----- **/
       },
 
       kurtosis: function (arr) {
-        var length = arr.length;
-        var n1 = 1 / length;
+        var n1 = 1 / arr.length;
+        /* first part of the kurtosis equation. */
 
         var mean = this.mean(arr);
 
         var n2_top = this.sum(
           arr.map(function (i) {
             return Math.pow(i - mean, 4);
+            /* get the residual and take it to the 4th power. */
           })
         );
+        /* the top of the second part of the kurtosis equation. */
 
         var n2_bottom = Math.pow(this.standardDeviation(arr), 4);
+        /* the bottom of the second part of the kurtosis equation. */
 
         return n1 * (n2_top / n2_bottom);
+        /* return the equation to show kurtosis. */
+
+        /** -----
+        @param  : arr - an array of numbers.
+        @desc   : Get the kurtosis of an array.
+        @return : returns a number.
+        ----- **/
       },
 
       skewness: function (arr) {
@@ -648,77 +683,181 @@ var _ = (function brockEvents () {
         var top = this.sum(
           arr.map(function (i) {
             return Math.pow(i - mean, 3);
+            /* get the residual and take it to the 3rd power. */
           })
         );
+        /* this is the top part of the equation. */
 
         var bottom = (length - 1) * Math.pow(this.standardDeviation(arr, true), 3);
+        /* this is the bottom part of the equation. */
 
         return top / bottom;
+        /* return the skewness. */
+
+        /** -----
+        @param  : arr - an array of numbers.
+        @desc   : Get the skewness of an array.
+        @return : returns a number.
+        ----- **/
       },
 
       movingSample: function (arr, period, callback) {
         var slice = arr.slice(0, period);
+        /* get the first slice of the array. */
+
         var newArray = [];
+        /* create the array to be returned. */
 
         for (var x = period; x < arr.length; x++) {
           newArray[x] = callback.call(this, slice, arr[x]);
+          /* return a callback with args of this (for use of other funcs),
+             the current slice, and the current index. */
 
           slice.shift();
+          /* remove first element (furthest back). */
+
           slice.push(arr[x]);
+          /* add new element to the end. */
         }
 
         return newArray;
+        /* return the custom array. */
+
+        /** -----
+        @param  : arr - an array of numbers.
+                  period - a period to slice and calculate by.
+                  callback - a function for performing math inside and
+                  returning a value in.
+        @desc   : Perform any continuous period calculation.
+        @return : returns an array.
+        ----- **/
       },
 
       productSample: function (arr, callback) {
         var newArray = [];
+        /* create the array to be returned. */
+
         for (var x = 1; x < arr.length; x++) {
           newArray[x] = callback(arr[x], arr[x - 1]);
+          /* give a callback with the current and previous index. */
         }
+
         return newArray;
+        /* return the custom array. */
+
+        /** -----
+        @param  : arr - an array of numbers.
+                  callback - a function for performing math inside and
+                  returning a value in.
+        @desc   : Perform any continuous product calculation.
+        @return : returns an array.
+        ----- **/
       },
 
       bollingerBands: function (arr, period, numDeviations) {
         return this.movingSample(arr, period, function (slice, current) {
+          /* utilizes the movingSample property. */
+
           var tempStdDev = this.standardDeviation(slice, true),
+          /* calculate the standard deviation of the slice. */
           tempMean = this.mean(slice);
+          /* calculate the mean of the slice. */
 
           return {
             high: tempMean + tempStdDev * (numDeviations || 1),
             current: current,
             low: tempMean - tempStdDev * (numDeviations || 1)
           };
+          /* return rolling mean + 1 stddev, current, and
+             rolling mean - 1stddev for each index. */
         });
+
+        /** -----
+        @param  : arr - an array of numbers.
+                  period - a period to calculate by.
+                  numDeviations - the number of standard deviations from mean.
+        @desc   : Return an array of bollinger bands.
+        @return : Returns an array of objects with the high, current, and low.
+        ----- **/
       },
 
       simpleMovingAverage: function (arr, period) {
         return this.movingSample(arr, period, function (slice) {
+          /* utilizes the movingSample property. */
+
           return this.mean(slice);
+          /* return the mean of the trailing period. */
         });
+
+        /** -----
+        @param  : arr - an array of numbers.
+                  period - a period to calculate by.
+        @desc   : Return an array of simple moving average values.
+        @return : Returns an array.
+        ----- **/
       },
 
       rollingVolatility: function (arr, period) {
         return this.movingSample(arr, period, function (slice) {
+          /* utilizes the movingSample property. */
+
           return this.standardDeviation(slice, true) * 15.84;
+          /* return the volatility of the trailing period. */
         });
+
+        /** -----
+        @param  : arr - an array of numbers.
+                  period - a period to calculate by.
+        @desc   : Return an array of volatility values.
+        @return : Returns an array.
+        ----- **/
       },
 
       rollingSkewness: function (arr, period) {
         return this.movingSample(arr, period, function (slice) {
+          /* utilizes the movingSample property. */
+
           return this.skewness(slice);
+          /* return the skewness over the trailing period. */
         });
+
+        /** -----
+        @param  : arr - an array of numbers.
+                  period - a period to calculate by.
+        @desc   : Return an array of volatility values.
+        @return : Returns an array.
+        ----- **/
       },
 
       rollingKurtosis: function (arr, period) {
         return this.movingSample(arr, period, function (slice) {
+          /* utilizes the movingSample property. */
+
           return this.kurtosis(slice);
+          /* return the kurtosis over the trailing period. */
         });
+
+        /** -----
+        @param  : arr - an array of numbers.
+                  period - a period to calculate by.
+        @desc   : Return an array of kurtosis values.
+        @return : Returns an array.
+        ----- **/
       },
 
       residuals: function (arr) {
         return this.productSample(arr, function (a, b) {
+          /* utilizes the productSample property. */
+
           return a / b;
+          /* returns the index over the previous index. */
         });
+
+        /** -----
+        @param  : arr - an array of numbers.
+        @desc   : Return an array of daily changes.
+        @return : Returns an array.
+        ----- **/
       },
 
       gaussian: function () {
@@ -731,10 +870,23 @@ var _ = (function brockEvents () {
         } while (r >= 1 || r === 0);
 
         return Math.sqrt(-2 * Math.log(r) / r) * x1;
+
+        /** -----
+        @desc   : Returns a number with a mean of 0 and stddev of 1.
+        @return : Returns a number.
+        ----- **/
       },
 
       normalDist: function (mean, standardDeviation) {
         return mean + this.gaussian() * standardDeviation;
+
+        /** -----
+        @param  : mean - the desired mean.
+                  standardDeviation - the desired standard deviation.
+        @desc   : Return a random number along a distribution with given mean
+                  and standard deviation.
+        @return : Returns a number.
+        ----- **/
       }
     }
 

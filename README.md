@@ -25,28 +25,27 @@ A list of core functions available are:
 1. ajax
 2. create
 3. get
-4. product
-5. sum
 6. quant (object)
 
 A list of quant function available are:
 
-1. sum
-2. mean
-3. variance
-4. last
-5. standardDeviation
-6. kurtosis
-7. skewness
-8. movingSample
-9. productSample
-10. bollingerBands
-11. simpleMovingAverage
-12. rollingVolatility
-13. rollingSkewness
-14. rollingKurtosis
-15. residuals
-16. gaussian
+1. sum: sum of array
+2. mean: mean of array
+3. variance: variance of array
+4. last: last index of array
+5. standardDeviation: standard deviation of array
+6. kurtosis: kurtosis of array
+7. skewness: skewness of array
+8. movingSample: generic callback for array slicing and continuous functions
+9. productSample: generic callback for continuous product functions
+10. bollingerBands: bollinger bands over time in array
+11. simpleMovingAverage: simple moving average over time in array
+12. rollingVolatility: volatility over time in array
+13. rollingSkewness: skewness over time in array
+14. rollingKurtosis: kurtosis over time in array
+15. residuals: array to residuals
+16. gaussian: returns a random number in distribution N(0, 1)
+17. normalDist: returns a random number in distribution N(mean, standardDeviation)
 
 
 ##Use
