@@ -5,27 +5,28 @@ This is my personal set of tools to cover all my jQuery needs without the jQuery
 
 A list of methods accessible to selections are:
 
-1. addClass
-2. append
-3. attr
-4. children
-5. css
-6. each
-7. el
-8. html
-9. on
-10. parent
-11. remove
-12. removeClass
-13. text
-14. val
+1. addClass: add class to one element
+2. append: append a HTML Element to parent
+3. attr: get/set attribute
+4. children: get children with attribute
+5. css: get/set CSS properties
+6. each: iterate through element selection
+7. el: filter selected elements by index or with callback
+8. html: get/set innerHTML
+9. on: add event listeners
+10. parent: get parent of one element
+11. remove: remove one element
+12. removeClass: remove class from one element
+13. text: get/set innerText
+14. val: get/set value of one element
 
 A list of core functions available are:
 
-1. ajax
-2. create
-3. get
-6. quant (object)
+1. ajax: send an ajax request
+2. create: create an HTML element with JSON
+3. get: specific GET request using internal ajax function
+6. quant (object): library of quantitative financial functions
+6. finance (object): library of financial functions
 
 A list of quant function available are:
 
