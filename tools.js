@@ -485,7 +485,7 @@ var _ = (function brockEvents () {
   };
 
   var outer_prototype = {
-    ajax : function (obj) {
+    ajax: function (obj) {
       var xhttp = new XMLHttpRequest();
       /** create a new request. **/
 
@@ -512,8 +512,12 @@ var _ = (function brockEvents () {
           var error, response;
 
           try {
-            response = (obj.dataType.toLowerCase() === "json") ?
+            if (obj.dataType) {
+              response = (obj.dataType.toLowerCase() === "json") ?
                 JSON.parse(xhttp.response) : xhttp.response;
+            } else {
+              response = xhttp.response;
+            }
             /** if the dataType is JSON, parse before returning. **/
           } catch (err) { error = err; }
           /** if dataType was supposed to be JSON but wasn't, set error to the
@@ -537,7 +541,7 @@ var _ = (function brockEvents () {
       ----- **/
     },
 
-    create : function (nodeSettings) {
+    create: function (nodeSettings) {
       if (!nodeSettings) nodeSettings = {};
       /** if nodeSettings is undefined, just create an empty object. **/
 
@@ -574,12 +578,80 @@ var _ = (function brockEvents () {
       ----- **/
     },
 
-    get : function (url, callback) {
+    get: function (url, callback) {
       DOM.ajax({
         type      : "GET",
         url       : url,
         callback  : callback
       });
+    },
+
+    quote: function (ticker, callback) {
+      var url = "http://query.yahooapis.com/v1/public/yql?q=select * from yahoo.finance.quotes where symbol in ('" +
+      ticker + "')&env=http%3A%2F%2Fdatatables.org%2Falltables.env&format=json";
+
+      this.get(url, function (data, response) {
+        try {
+          data = JSON.parse(data).query.results.quote;
+        } catch (err) { throw "This ticker is invalid."; }
+
+        callback(data);
+      });
+    },
+
+    news: function (query, start, callback) {
+      this.ajax({
+        type: "POST",
+        url: "../personal/tools/tools/deps/google_news.php",
+        data: {
+          query: query,
+          start: start,
+        },
+        callback: function (data) {
+          callback(data.responseData);
+        },
+        dataType: "json"
+      });
+    },
+
+    newsList: function (query, num_results, callback) {
+      var news_results = [];
+
+      function search(x) {
+        _.news(query, x, function (data) {
+          news_results = news_results.concat(data.results);
+
+          if (x < num_results - 4) {
+            search(x + 4);
+          } else {
+            callback(news_results);
+          }
+        });
+      }
+
+      return search(0);
+    },
+
+    moment: function () {
+      var date = new Date();
+      return {
+        d: date.getDate(),
+        m: date.getMonth() - 1,
+        y: date.getFullYear(),
+        h: date.getHours(),
+        mm: date.getMinutes(),
+        s: date.getSeconds(),
+        ms: date.getMilliseconds(),
+        fmt: {
+          d: ("0" + date.getDate()).slice(-2),
+          m: ("0" + date.getMonth()).slice(-2),
+          y: ("0" + date.getFullYear()).slice(-2),
+          h: ("0" + date.getHours()).slice(-2),
+          mm: ("0" + date.getMinutes()).slice(-2),
+          s: ("0" + date.getSeconds()).slice(-2),
+          ms: ("000" + date.getMilliseconds()).slice(-3),
+        }
+      };
     },
 
     finance : {
