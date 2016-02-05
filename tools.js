@@ -1,4 +1,5 @@
 var _ = (function brockEvents () {
+  "use strict";
 
   var OVERHEAD_FUNCS = {
     build: function (obj, prototype) {
@@ -554,8 +555,16 @@ var _ = (function brockEvents () {
         if (nodeSettings.hasOwnProperty(x)) {
           /** if not an Object.prototype property. **/
 
-          node[x] = nodeSettings[x];
-          /** add property to the node. **/
+          if (/innerHTML|className/.test(x)) {
+            node[x] = nodeSettings[x];
+            /* because innerHTML isn't an atribute. */
+
+          } else if (x !== "tagName") {
+            node.setAttribute(x, nodeSettings[x]);
+            /** add property to the node. **/
+
+          }
+
         }
       }
 
@@ -579,24 +588,48 @@ var _ = (function brockEvents () {
     },
 
     get: function (url, callback) {
-      DOM.ajax({
+      this.ajax({
         type      : "GET",
         url       : url,
         callback  : callback
       });
+
+      /** -----
+      @param : url - a valid url for the ajax request
+               callback - a callback function with @param response.
+      @desc  : A quick call that uses the internal ajax function to execute.
+      ----- **/
     },
 
     quote: function (ticker, callback) {
+      if (Array.isArray(ticker))
+        ticker = ticker.join(",");
+
       var url = "http://query.yahooapis.com/v1/public/yql?q=select * from yahoo.finance.quotes where symbol in ('" +
       ticker + "')&env=http%3A%2F%2Fdatatables.org%2Falltables.env&format=json";
+      /* the yahoo finance quote string with the variable embed. */
 
       this.get(url, function (data, response) {
+        /* use the internal 'get' function. */
+
         try {
           data = JSON.parse(data).query.results.quote;
+          /* attempt to get the quote (enum list of attr). If it doesn't exist
+             then the query returned false, and the ticker is likely invalid. */
+
         } catch (err) { throw "This ticker is invalid."; }
 
         callback(data);
+        /** throw a callback with @param data. **/
+
       });
+
+      /** -----
+      @param : ticker - a valid comma-seperated string of tickers or array.
+               callback - a callback function with @param data.
+      @desc  : A quick call function to the Yahoo! Finance API to retrieve
+               current stock information for a list of tickers.
+      ----- **/
     },
 
     news: function (query, start, callback) {
