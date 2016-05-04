@@ -74,6 +74,10 @@ var _ = (function brockEvents () {
         /** if the selector is an array, just keep it as is. We assume
            this is an array of nodes. **/
 
+      } else if (sel == window) {
+
+        return [window];
+
       } else {
 
         throw "Error. This is not a proper selector type.";
@@ -105,15 +109,23 @@ var _ = (function brockEvents () {
     var prototype = {
 
       addClass: function (className) {
-        var classes = INTERNAL.first().className.split(/ /);
+        var $this = this;
 
-        if (classes.indexOf(className) === -1)
-          classes.push(className);
-        /** check if className exists in classes array, and if not, push the
-           className to classes array. **/
+        if (/ /.test(className)) {
+          className.split(/ /g).forEach(function (o) {
+            $this.addClass(o);
+          });
+        } else {
+          var classes = INTERNAL.first().className.split(/ /);
 
-        INTERNAL.first().className = classes.join(" ");
-        /** set as first element's className the joined version of the array. **/
+          if (classes.indexOf(className) === -1)
+            classes.push(className);
+          /** check if className exists in classes array, and if not, push the
+             className to classes array. **/
+
+          INTERNAL.first().className = classes.join(" ");
+          /** set as first element's className the joined version of the array. **/
+        }
 
         return this;
 
@@ -128,7 +140,11 @@ var _ = (function brockEvents () {
         if (node instanceof HTMLElement)
           INTERNAL.first().appendChild(node);
           /** if a valid HTML Element, then append the child to the parent. **/
-        else
+        else if (Array.isArray(node)) {
+          node.forEach(function (o) {
+            INTERNAL.first().appendChild(o);
+          });
+        } else
           throw "Error. This is not a proper HTML Node type.";
           /** if not, throw error saying you must use valid HTML Element. **/
 
@@ -137,12 +153,12 @@ var _ = (function brockEvents () {
         /** -----
         @param : node - a valid HTML Element.
         @use   : single element.
-        @desc  : Add a valid HTML Element to a single element.
+        @desc  : Add a valid HTML Element to a single parent element.
         ----- **/
       },
 
       attr: function (attr, value) {
-        if (!value) {
+        if (typeof value === "undefined" || value === null) {
           /** if the value @param doesn't exist, then assume it is a query to
              retrieve the value of an attribute. **/
 
@@ -167,6 +183,15 @@ var _ = (function brockEvents () {
         @desc  : Set attribute with value for list of nodes or query the first
                  node's attribute value.
         ----- **/
+      },
+
+      before: function (content) {
+        var parent = INTERNAL.first().parentNode;
+
+        console.log(parent, content, INTERNAL.first());
+        parent.insertBefore(content, INTERNAL.first());
+
+        return this;
       },
 
       children: function (sel) {
@@ -210,6 +235,20 @@ var _ = (function brockEvents () {
         ----- **/
       },
 
+      click: function (callback) {
+        if (typeof callback == "function") {
+          this.on("click", callback);
+        } else {
+          INTERNAL.first().click();
+        }
+
+        return this;
+      },
+
+      clone: function () {
+        return INTERNAL.first().cloneNode(true);
+      },
+
       css: function (attr, value) {
         if (typeof attr === "object") {
           /** if it is an object, it will be in the format of having multiple
@@ -241,6 +280,9 @@ var _ = (function brockEvents () {
 
           });
 
+        } else if (typeof attr === "string") {
+          console.log(INTERNAL.first());
+          return INTERNAL.first().style[attr];
         }
 
         return this;
@@ -252,6 +294,38 @@ var _ = (function brockEvents () {
         @use   : multiple elements.
         @desc  : Allow users to set CSS settings for elements.
         ----- **/
+      },
+
+      data: function (attr, value) {
+        if (typeof value === "undefined") {
+          /** if the value @param doesn't exist, then assume it is a query to
+             retrieve the value of an attribute. **/
+
+          return INTERNAL.first().dataset[attr];
+          /** return the value of the given attribute for the first node. **/
+
+        } else {
+          INTERNAL.first().dataset[attr] = value;
+        }
+
+        return this;
+
+        /** -----
+        @param : attr - the selected attribute to either query or set.
+                 value - [optional] when setting the value of an attribute.
+        @use   : single element for query and command.
+        @desc  : Set attribute with value for list of nodes or query the first
+                 node's attribute value.
+        ----- **/
+      },
+
+      dblclick: function () {
+        var event = new MouseEvent('dblclick', {
+            'view': window,
+            'bubbles': true,
+            'cancelable': true
+          });
+        INTERNAL.first().dispatchEvent(event);
       },
 
       each: function (callback) {
@@ -311,8 +385,36 @@ var _ = (function brockEvents () {
         ----- **/
       },
 
+      focus: function () {
+        INTERNAL.first().focus();
+
+        return this;
+      },
+
+      form: function () {
+        INTERNAL.first().children("input, select, textarea").each(function () {
+          console.log(this);
+        });
+      },
+
+      hasClass: function (className) {
+        var classes = INTERNAL.first().className.split(/ /g);
+
+        return (classes.indexOf(className) !== -1);
+      },
+
+      height: function (val) {
+        if (typeof val === "undefined" || val === null) {
+          return INTERNAL.first().clientHeight;
+        } else {
+          INTERNAL.first().style.height = val;
+        }
+
+        return this;
+      },
+
       html: function (html, append) {
-        if (!html) {
+        if (typeof html !== "string") {
           /** if the html @param is empty, then return the contents because this
              is now a query, not a command. **/
 
@@ -323,9 +425,15 @@ var _ = (function brockEvents () {
           INTERNAL.loop(function (i) {
             /** loop through all selector nodes. **/
 
-            i.innerHTML = (append) ? i.innerHTML + html : html;
-            /** if append is true, node.innerHTML should append html, else set
-               to the html contents. **/
+            if (typeof html == "function") {
+              i.innerHTML = (append) ? i.innerHTML + html() : html();
+              /** if append is true, node.innerHTML should append html, else set
+                 to the html contents. **/
+            } else if (typeof html == "string") {
+              i.innerHTML = (append) ? i.innerHTML + html : html;
+              /** if append is true, node.innerHTML should append html, else set
+                 to the html contents. **/
+            }
           });
         }
 
@@ -342,9 +450,13 @@ var _ = (function brockEvents () {
       },
 
       on: function (event, callback) {
+        event = event.split(/ /g);
+
         INTERNAL.loop(function (i) {
-          i.addEventListener(event, function (e) {
-            callback.call(e.target);
+          event.forEach(function (o) {
+            i.addEventListener(o, function (e) {
+              callback.call(this, e);
+            });
           });
         });
 
@@ -367,6 +479,20 @@ var _ = (function brockEvents () {
         @param : none
         @use   : single element.
         @desc  : Get the parent node of the first selection.
+        ----- **/
+      },
+
+      prepend: function (node) {
+        var firstChild = INTERNAL.first().firstChild;
+        /* get the first child of a parent div. */
+
+        INTERNAL.first().insertBefore(node, firstChild);
+        /* insert before the first child of the parent div. */
+
+        /** -----
+        @param : node - a valid HTML element.
+        @use   : single element.
+        @desc  : Add a valid HTML Element to the beginning of a single element.
         ----- **/
       },
 
@@ -393,18 +519,26 @@ var _ = (function brockEvents () {
       },
 
       removeClass: function (className) {
-        var classes = INTERNAL.first().className.split(/ /);
+        var $this = this;
 
-        var classIndex = classes.indexOf(className);
-        /** get the index of the className **/
+        if (/ /.test(className)) {
+          className.split(/ /).forEach(function (o) {
+            $this.removeClass(o);
+          });
+        } else {
+          var classes = INTERNAL.first().className.split(/ /);
 
-        if (classIndex > -1)
-        /** if classIndex exists...  **/
-          classes.splice(classIndex, 1);
-          /** return the array without the classIndex index. **/
+          var classIndex = classes.indexOf(className);
+          /** get the index of the className **/
 
-        INTERNAL.first().className = classes.join(" ");
-        /** set as first element's className the joined version of the array. **/
+          if (classIndex > -1)
+          /** if classIndex exists...  **/
+            classes.splice(classIndex, 1);
+            /** return the array without the classIndex index. **/
+
+          INTERNAL.first().className = classes.join(" ");
+          /** set as first element's className the joined version of the array. **/
+        }
 
         return this;
 
@@ -445,8 +579,18 @@ var _ = (function brockEvents () {
         ----- **/
       },
 
+      toggleClass: function (className) {
+        if (this.hasClass(className)) {
+          this.removeClass(className);
+        } else {
+          this.addClass(className);
+        }
+
+        return this;
+      },
+
       val: function (value) {
-        if (!value) {
+        if (typeof value !== "string") {
           /** if the value @param is empty, then return the contents of the elem
              value. **/
 
@@ -469,7 +613,17 @@ var _ = (function brockEvents () {
         @use   : single element for query, multiple elements for command.
         @desc  : Add a value to a list of nodes or query the first node's value.
         ----- **/
-      }
+      },
+
+      width: function (val) {
+        if (typeof val === "undefined" || val === null) {
+          return INTERNAL.first().clientWidth;
+        } else {
+          INTERNAL.first().style.width = val;
+        }
+
+        return this;
+      },
     };
     /** this is a list of all functions that the selectors can access. **/
 
@@ -486,6 +640,25 @@ var _ = (function brockEvents () {
   };
 
   var outer_prototype = {
+    assign: function (target) {
+      if (target === undefined || target === null) {
+        throw new TypeError('Cannot convert undefined or null to object');
+      }
+
+      var output = Object(target);
+      for (var index = 1; index < arguments.length; index++) {
+        var source = arguments[index];
+        if (source !== undefined && source !== null) {
+          for (var nextKey in source) {
+            if (source.hasOwnProperty(nextKey)) {
+              output[nextKey] = source[nextKey];
+            }
+          }
+        }
+      }
+      return output;
+    },
+
     ajax: function (obj) {
       var xhttp = new XMLHttpRequest();
       /** create a new request. **/
@@ -502,7 +675,7 @@ var _ = (function brockEvents () {
       xhttp.open(obj.type, obj.url, true);
       /** open a connection of obj.type [GET/POST], obj.url [PATH] **/
 
-      xhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+      xhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded" || obj.contentType);
       /** set a request header type form. **/
 
       xhttp.send(data);
@@ -542,6 +715,23 @@ var _ = (function brockEvents () {
       ----- **/
     },
 
+    jsonp: function (url, callback) {
+      var callbackName = "callback_" + parseInt(Math.random() * 1E10, 10);
+      window[callbackName] = function (data) {
+        callback(data);
+        setTimeout(function () {
+          delete window[callbackName];
+        }, 10);
+      };
+
+      var script = document.createElement("script");
+      script.src = (/\?/.test(url)) ? url + "&callback=" + callbackName : url + "?callback=" + callbackName;
+
+      document.body.appendChild(script);
+    },
+
+    isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
+
     create: function (nodeSettings) {
       if (!nodeSettings) nodeSettings = {};
       /** if nodeSettings is undefined, just create an empty object. **/
@@ -556,8 +746,12 @@ var _ = (function brockEvents () {
           /** if not an Object.prototype property. **/
 
           if (/innerHTML|className/.test(x)) {
-            node[x] = nodeSettings[x];
-            /* because innerHTML isn't an atribute. */
+            if (typeof nodeSettings[x] == "function") {
+              node[x] = nodeSettings[x]();
+            } else if (typeof nodeSettings[x] == "string") {
+              node[x] = nodeSettings[x];
+              /* because innerHTML isn't an atribute. */
+            }
 
           } else if (x !== "tagName") {
             node.setAttribute(x, nodeSettings[x]);
@@ -587,6 +781,12 @@ var _ = (function brockEvents () {
       ----- **/
     },
 
+    filterEmpty: function (arr) {
+      return arr.filter(function (i) {
+        return i;
+      });
+    },
+
     get: function (url, callback) {
       this.ajax({
         type      : "GET",
@@ -599,6 +799,35 @@ var _ = (function brockEvents () {
                callback - a callback function with @param response.
       @desc  : A quick call that uses the internal ajax function to execute.
       ----- **/
+    },
+
+    loop: function (arr, callback) {
+      for (var x = 0; x < arr.length; x++) {
+        callback(arr[x], x, arr);
+      }
+    },
+
+    stackOverflowError: function (err) {
+      var addr = "http://www.stackoverflow.com/search?q=[js]+" + err.message;
+      window.open(addr, "_blank");
+    },
+
+    map: function (arr, callback) {
+      var new_arr = [];
+      for (var x = 0; x < arr.length; x++) {
+        new_arr[x] = callback(arr[x], x, arr);
+      }
+
+      return new_arr;
+    },
+
+    mapReduce: function (arr, callback) {
+      var new_arr = [];
+      for (var x = 0; x < arr.length; x++) {
+        new_arr[x] = callback(arr[x], (new_arr[x - 1]) ? new_arr[x - 1] : 1, x);
+      }
+
+      return new_arr;
     },
 
     quote: function (ticker, callback) {
@@ -665,11 +894,14 @@ var _ = (function brockEvents () {
       return search(0);
     },
 
-    moment: function () {
-      var date = new Date();
+    moment: function (time) {
+      var MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+      var date = (time) ? new Date(time) : new Date();
+
       return {
         d: date.getDate(),
-        m: date.getMonth() - 1,
+        m: date.getMonth(),
+        month: MONTHS[date.getMonth()],
         y: date.getFullYear(),
         h: date.getHours(),
         mm: date.getMinutes(),
@@ -677,8 +909,8 @@ var _ = (function brockEvents () {
         ms: date.getMilliseconds(),
         fmt: {
           d: ("0" + date.getDate()).slice(-2),
-          m: ("0" + date.getMonth()).slice(-2),
-          y: ("0" + date.getFullYear()).slice(-2),
+          m: ("0" + (date.getMonth() + 1)).slice(-2),
+          y: ("0" + date.getFullYear()).slice(-4),
           h: ("0" + date.getHours()).slice(-2),
           mm: ("0" + date.getMinutes()).slice(-2),
           s: ("0" + date.getSeconds()).slice(-2),
@@ -905,6 +1137,54 @@ var _ = (function brockEvents () {
         ----- **/
       },
 
+      volatilityFromPrice: function (arr) {
+        var residuals = this.residuals(arr).slice(1);
+        /* get the residuals array from the price array. */
+
+        var variance = this.variance(residuals, true);
+
+        return Math.sqrt(variance) * Math.sqrt(251);
+        /* take the standard deviation and annualize the result. */
+
+        /** -----
+        @param  : arr - an array of price values from an asset.
+        @desc   : Get the volatility of the total set.
+        @return : returns a number.
+        ----- **/
+      },
+
+      skewnessFromPrice: function (arr) {
+        var residuals = this.residuals(arr).slice(1);
+        /* get the residuals array from the price array. */
+
+        var skewness = this.skewness(residuals);
+
+        return skewness;
+        /* return the skewness value. */
+
+        /** -----
+        @param  : arr - an array of price values from an asset.
+        @desc   : Get the skewness of the total set.
+        @return : returns a number.
+        ----- **/
+      },
+
+      kurtosisFromPrice: function (arr) {
+        var residuals = this.residuals(arr).slice(1);
+        /* get the residuals array from the price array. */
+
+        var kurtosis = this.kurtosis(residuals);
+
+        return kurtosis;
+        /* return the kurtosis value. */
+
+        /** -----
+        @param  : arr - an array of price values from an asset.
+        @desc   : Get the kurtosis of the total set.
+        @return : returns a number.
+        ----- **/
+      },
+
       movingSample: function (arr, period, callback) {
         var slice = arr.slice(0, period);
         /* get the first slice of the array. */
@@ -962,15 +1242,19 @@ var _ = (function brockEvents () {
         return this.movingSample(arr, period, function (slice, current) {
           /* utilizes the movingSample property. */
 
-          var tempStdDev = this.standardDeviation(slice, true),
+          var tempStdDev = this.standardDeviation(
+            this.residuals(slice).filter(function (i) {
+              return typeof i == "number";
+            }), true) * (numDeviations || 1) + 1,
           /* calculate the standard deviation of the slice. */
+
           tempMean = this.mean(slice);
           /* calculate the mean of the slice. */
 
           return {
-            high: tempMean + tempStdDev * (numDeviations || 1),
+            high: tempMean * tempStdDev,
             current: current,
-            low: tempMean - tempStdDev * (numDeviations || 1)
+            low: tempMean * (1 / tempStdDev)
           };
           /* return rolling mean + 1 stddev, current, and
              rolling mean - 1stddev for each index. */
@@ -998,6 +1282,30 @@ var _ = (function brockEvents () {
                   period - a period to calculate by.
         @desc   : Return an array of simple moving average values.
         @return : Returns an array.
+        ----- **/
+      },
+
+      RSI: function (arr) {
+        var counter = 0;
+
+        var residuals = this.residuals(arr).filter(function (i) {
+          return typeof i == "number";
+        });
+
+        residuals.forEach(function (i) {
+          if (i >= 1) counter++;
+          /* if the current index is greater than 1, add to counter. */
+
+        });
+
+        return counter / arr.length;
+        /* divide by arr.length to get proportion instead of count. */
+
+        /** -----
+        @param  : arr - an array of numbers.
+        @desc   : Return the simple Relative Strength Index value for an array
+                  of daily returns.
+        @return : Returns a number.
         ----- **/
       },
 
@@ -1062,6 +1370,20 @@ var _ = (function brockEvents () {
         @desc   : Return an array of daily changes.
         @return : Returns an array.
         ----- **/
+      },
+
+      summaryStatistics: function (arr) {
+        arr = arr.sort(function (a, b) {
+          return (a < b) ? -1 : (a > b) ? 1 : 0;
+        });
+
+        return {
+          min: arr[0],
+          max: this.last(arr),
+          mean: this.sum(arr) / arr.length,
+          q1: arr[Math.floor(arr.length * 0.25)],
+          q3: arr[Math.ceil(arr.length * 0.75)]
+        };
       },
 
       gaussian: function () {
